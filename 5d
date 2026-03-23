@@ -1,0 +1,81 @@
+import pygame
+import math
+
+pygame.init()
+WIDTH, HEIGHT = 600, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
+
+WHITE = (255,255,255)
+BLACK = (0,0,0)
+
+# Create 3 cubes with scaling
+def make_cube(scale):
+    return [[x*scale, y*scale, z*scale] for x in (-1,1) for y in (-1,1) for z in (-1,1)]
+
+outer = make_cube(1)
+middle = make_cube(0.6)
+inner = make_cube(0.3)
+
+points = outer + middle + inner
+
+# Cube edges
+edges = [(0,1),(1,2),(2,3),(3,0),(4,5),(5,6),(6,7),(7,4),(0,4),(1,5),(2,6),(3,7)]
+
+# Connections between nested cubes
+connections = [(i, i+8) for i in range(8)] + [(i, i+16) for i in range(8)]
+
+angle = 0
+
+def rotate(point, angle):
+    x, y, z = point
+    cos_a = math.cos(angle)
+    sin_a = math.sin(angle)
+    # Y rotation
+    x, z = x * cos_a - z * sin_a, x * sin_a + z * cos_a
+    # X rotation
+    y, z = y * cos_a - z * sin_a, y * cos_a + z * sin_a
+    return [x, y, z]
+
+def project(point):
+    distance = 5
+    factor = 200 / (distance - point[2])
+    x = int(point[0]*factor + WIDTH//2)
+    y = int(point[1]*factor + HEIGHT//2)
+    return (x, y)
+
+running = True
+while running:
+    screen.fill(BLACK)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    projected = [project(rotate(p, angle)) for p in points]
+
+    # Draw cubes
+    for cube_offset in [0, 8, 16]:
+        for edge in edges:
+            pygame.draw.line(screen, WHITE, projected[edge[0]+cube_offset], projected[edge[1]+cube_offset], 1)
+
+    # Draw connections
+    for c in connections:
+        pygame.draw.line(screen, WHITE, projected[c[0]], projected[c[1]], 1)
+
+    angle += 0.02
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+       
+    
+    
+
+
+
+
+
+
+  
+    
+       
